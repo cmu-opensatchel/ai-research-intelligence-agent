@@ -26,6 +26,9 @@ The system is implemented as a Python package (`ai_research_agent/`) with separa
 | `verification.py` | Evidence verification (source identifiability, claim support, date window, context) |
 | `tot.py` | Bounded Tree of Thought impact assessment (beam width 2, depth 2) |
 | `social_discovery.py` | Optional social media discovery (YouTube, X; Facebook/Instagram/LinkedIn placeholders) |
+| `huggingface_discovery.py` | Hugging Face models/datasets discovery (public API, no key) |
+| `conference_discovery.py` | Conference papers from OpenReview venues (NeurIPS, ICML, ICLR, etc.) |
+| `rss_discovery.py` | Lab/blog RSS feed discovery (no key required) |
 | `synthesis.py` | Deduplication and roundup report generation |
 | `agents.py` | Agent roles: Research Scout, Industry Scout, Implementation Scout, Impact Analyst, Research Coordinator |
 | `coordinator.py` | Workflow orchestration and run artifact creation |
@@ -36,9 +39,9 @@ No CrewAI, LangChain, or MCP is used — the design uses the simplest tools that
 
 ### Agent Roles
 
-- **Research Scout**: Discovers arXiv preprints and research papers matching configured topics.
-- **Industry Scout**: Fetches lab announcements and technical reports.
-- **Implementation Scout**: Discovers GitHub repositories and implementations.
+- **Research Scout**: Discovers arXiv preprints, conference papers, and research papers matching configured topics.
+- **Industry Scout**: Fetches lab announcements and technical reports via RSS feeds.
+- **Implementation Scout**: Discovers GitHub repositories, Hugging Face models/datasets, and implementations.
 - **Impact Analyst**: Runs ToT assessment and ranks candidates.
 - **Research Coordinator**: Orchestrates the full end-to-end workflow.
 
@@ -105,6 +108,41 @@ python -m ai_research_agent.cli run --topics "agentic AI" --window 7 --social
 ```
 
 No credentials are stored in the repository. API keys/tokens must be supplied at runtime via environment variables.
+
+### Hugging Face Models & Datasets
+
+Discovers models and datasets on Hugging Face Hub using the public API — no API key required:
+
+```bash
+python -m ai_research_agent.cli run --topics "agentic AI,LLMs" --window 30
+```
+
+The Implementation Scout queries HF for models and datasets matching each topic. Model cards and dataset pages are treated as primary sources but claims are still verified against associated papers.
+
+### Conference Proceedings (NeurIPS, ICML, ICLR, etc.)
+
+Discovers conference papers from OpenReview venues — no API key required:
+
+```bash
+python -m ai_research_agent.cli run --topics "agentic AI,GNNs" --window 30
+```
+
+Covers NeurIPS, ICML, ICLR, AISTATS, KDD, and other ML/AI venues indexed on OpenReview.
+
+### Lab/Blog RSS Feeds
+
+Configure RSS feed URLs for research-lab blogs. Add your feed URLs to `ai_research_agent/config.py` (`DEFAULT_LAB_RSS_FEEDS`) or pass them at runtime:
+
+```python
+# In config.py
+DEFAULT_LAB_RSS_FEEDS = [
+    "https://deepmind.google/blog/rss.xml",
+    "https://ai.meta.com/blog/rss/",
+    "https://openai.com/blog/rss/",
+]
+```
+
+The Industry Scout fetches and parses each feed, extracting title, URL, publication date, and summary.
 
 ## Sample Run
 

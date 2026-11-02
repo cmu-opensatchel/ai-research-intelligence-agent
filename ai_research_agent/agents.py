@@ -61,6 +61,40 @@ def social_scout(
     return discover_all_social(topics, config=cfg)
 
 
+def huggingface_scout(topics: List[str], config: Optional[AgentConfig] = None) -> List[SourceRecord]:
+    """Hugging Face Scout: discovers models and datasets on Hugging Face Hub.
+
+    Uses the public HF API — no API key required. Results are primary sources
+    (model cards and dataset pages).
+    """
+    cfg = config or AgentConfig()
+    from .huggingface_discovery import discover_all_huggingface
+    return discover_all_huggingface(topics, config=cfg)
+
+
+def conference_scout(topics: List[str], config: Optional[AgentConfig] = None) -> List[SourceRecord]:
+    """Conference Scout: discovers conference papers from OpenReview venues.
+
+    Covers NeurIPS, ICML, ICLR, AISTATS, KDD, and others. No API key required.
+    Results are primary sources (conference papers).
+    """
+    cfg = config or AgentConfig()
+    from .conference_discovery import discover_all_conferences
+    return discover_all_conferences(topics, config=cfg)
+
+
+def rss_scout(feed_urls: List[str], config: Optional[AgentConfig] = None) -> List[SourceRecord]:
+    """RSS Scout: fetches lab/blog announcement RSS feeds.
+
+    Users configure feed URLs (e.g., Google DeepMind, Meta AI, Microsoft
+    Research, OpenAI, Anthropic blogs). No API key required.
+    """
+    cfg = config or AgentConfig()
+    from .rss_discovery import discover_all_rss_feeds, DEFAULT_LAB_RSS_FEEDS
+    urls = feed_urls or DEFAULT_LAB_RSS_FEEDS
+    return discover_all_rss_feeds(urls, config=cfg)
+
+
 def impact_analyst(
     candidates: List[Candidate],
     passages: List,
@@ -99,9 +133,18 @@ def research_coordinator(
     implementation_sources = implementation_scout(topics, config=cfg)
     industry_sources = industry_scout(announcement_urls or [], config=cfg)
     social_sources = social_scout(topics, config=cfg)
+    huggingface_sources = huggingface_scout(topics, config=cfg)
+    conference_sources = conference_scout(topics, config=cfg)
+    rss_sources = rss_scout(cfg.rss_feed_urls, config=cfg)
 
     all_sources = (
-        research_sources + implementation_sources + industry_sources + social_sources
+        research_sources
+        + implementation_sources
+        + industry_sources
+        + social_sources
+        + huggingface_sources
+        + conference_sources
+        + rss_sources
     )
     seen = set()
     unique_sources: List[SourceRecord] = []

@@ -55,6 +55,11 @@ SOURCE_TYPE_X = "x"
 SOURCE_TYPE_FACEBOOK = "facebook"
 SOURCE_TYPE_INSTAGRAM = "instagram"
 SOURCE_TYPE_LINKEDIN = "linkedin"
+SOURCE_TYPE_HUGGINGFACE = "huggingface"
+SOURCE_TYPE_CONFERENCE = "conference"
+
+# Default lab RSS feed URLs (empty by default; users add their own)
+DEFAULT_LAB_RSS_FEEDS: List[str] = []
 
 # Database path for run state and history
 RUN_STATE_DB_PATH: Path = Path("data/run_state.db")
@@ -101,3 +106,4 @@ class AgentConfig:
     social_max_results_per_platform: int = SOCIAL_MAX_RESULTS_PER_PLATFORM
     youtube_api_key: str = YOUTUBE_API_KEY
     x_bearer_token: str = X_BEARER_TOKEN
+    rss_feed_urls: List[str] = field(default_factory=lambda: list(DEFAULT_LAB_RSS_FEEDS))
