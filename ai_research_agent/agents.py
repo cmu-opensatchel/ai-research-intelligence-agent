@@ -45,6 +45,22 @@ def implementation_scout(topics: List[str], config: Optional[AgentConfig] = None
     return sources
 
 
+def social_scout(
+    topics: List[str], config: Optional[AgentConfig] = None
+) -> List[SourceRecord]:
+    """Social Scout: discovers social media signals (YouTube, X, etc.).
+
+    Only runs if config.enable_social_discovery is True. Results are discovery
+    signals only — never primary evidence.
+    """
+    cfg = config or AgentConfig()
+    if not cfg.enable_social_discovery:
+        return []
+
+    from .social_discovery import discover_all_social
+    return discover_all_social(topics, config=cfg)
+
+
 def impact_analyst(
     candidates: List[Candidate],
     passages: List,
@@ -82,8 +98,11 @@ def research_coordinator(
     research_sources = research_scout(topics, config=cfg)
     implementation_sources = implementation_scout(topics, config=cfg)
     industry_sources = industry_scout(announcement_urls or [], config=cfg)
+    social_sources = social_scout(topics, config=cfg)
 
-    all_sources = research_sources + implementation_sources + industry_sources
+    all_sources = (
+        research_sources + implementation_sources + industry_sources + social_sources
+    )
     seen = set()
     unique_sources: List[SourceRecord] = []
     for s in all_sources:

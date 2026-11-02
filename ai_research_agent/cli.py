@@ -12,6 +12,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from .coordinator import run_workflow
+from .config import AgentConfig
 from .storage import RunStore
 
 app = typer.Typer(help="AI Research Intelligence Agent - CLI")
@@ -23,17 +24,22 @@ def run(
     topics: str = typer.Option("agentic AI,LLMs,RAG,multimodal AI,GNNs", help="Comma-separated AI topics"),
     window: int = typer.Option(30, help="Reporting window in days"),
     urls: str = typer.Option("", help="Comma-separated lab announcement URLs (optional)"),
+    social: bool = typer.Option(False, help="Enable social media discovery (requires API keys; discovery signals only)"),
 ):
     """Run the AI research intelligence workflow."""
     topic_list = [t.strip() for t in topics.split(",") if t.strip()]
     url_list = [u.strip() for u in urls.split(",") if u.strip()]
 
-    console.print(Panel.fit(f"[bold]AI Research Intelligence Agent[/bold]\nTopics: {', '.join(topic_list)}\nWindow: {window} days"))
+    console.print(Panel.fit(f"[bold]AI Research Intelligence Agent[/bold]\nTopics: {', '.join(topic_list)}\nWindow: {window} days\nSocial discovery: {'enabled' if social else 'disabled'}"))
+
+    cfg = AgentConfig()
+    cfg.enable_social_discovery = social
 
     result = run_workflow(
         topics=topic_list,
         reporting_window_days=window,
         announcement_urls=url_list if url_list else None,
+        config=cfg,
     )
 
     # Display roundup

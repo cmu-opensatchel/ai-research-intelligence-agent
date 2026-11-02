@@ -50,6 +50,11 @@ SOURCE_TYPE_ARXIV = "arxiv"
 SOURCE_TYPE_GITHUB = "github"
 SOURCE_TYPE_LAB_ANNOUNCEMENT = "lab_announcement"
 SOURCE_TYPE_TECHNICAL_REPORT = "technical_report"
+SOURCE_TYPE_YOUTUBE = "youtube"
+SOURCE_TYPE_X = "x"
+SOURCE_TYPE_FACEBOOK = "facebook"
+SOURCE_TYPE_INSTAGRAM = "instagram"
+SOURCE_TYPE_LINKEDIN = "linkedin"
 
 # Database path for run state and history
 RUN_STATE_DB_PATH: Path = Path("data/run_state.db")
@@ -61,6 +66,15 @@ RUN_ARTIFACTS_DIR: Path = Path("run_artifacts")
 REQUEST_TIMEOUT: int = 30
 MAX_RETRIES: int = 2
 USER_AGENT: str = "AI-Research-Intelligence-Agent/0.1 (research monitoring; contact: example@example.com)"
+
+# Social media discovery (optional, opt-in)
+# Social platforms are discovery signals only, not primary evidence.
+# API credentials must be provided at runtime via environment variables;
+# they are never stored in the repository.
+ENABLE_SOCIAL_DISCOVERY: bool = False
+SOCIAL_MAX_RESULTS_PER_PLATFORM: int = 5
+YOUTUBE_API_KEY: str = ""  # set via YOUTUBE_API_KEY env var at runtime
+X_BEARER_TOKEN: str = ""   # set via X_BEARER_TOKEN env var at runtime
 
 
 @dataclass
@@ -83,3 +97,7 @@ class AgentConfig:
     request_timeout: int = REQUEST_TIMEOUT
     max_retries: int = MAX_RETRIES
     user_agent: str = USER_AGENT
+    enable_social_discovery: bool = ENABLE_SOCIAL_DISCOVERY
+    social_max_results_per_platform: int = SOCIAL_MAX_RESULTS_PER_PLATFORM
+    youtube_api_key: str = YOUTUBE_API_KEY
+    x_bearer_token: str = X_BEARER_TOKEN

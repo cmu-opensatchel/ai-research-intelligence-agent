@@ -25,6 +25,7 @@ The system is implemented as a Python package (`ai_research_agent/`) with separa
 | `retrieval.py` | Sentence-transformer embeddings + ChromaDB vector store, semantic search |
 | `verification.py` | Evidence verification (source identifiability, claim support, date window, context) |
 | `tot.py` | Bounded Tree of Thought impact assessment (beam width 2, depth 2) |
+| `social_discovery.py` | Optional social media discovery (YouTube, X; Facebook/Instagram/LinkedIn placeholders) |
 | `synthesis.py` | Deduplication and roundup report generation |
 | `agents.py` | Agent roles: Research Scout, Industry Scout, Implementation Scout, Impact Analyst, Research Coordinator |
 | `coordinator.py` | Workflow orchestration and run artifact creation |
@@ -82,6 +83,29 @@ python -m ai_research_agent.cli run --topics "GNNs" --window 30 --urls "https://
 python -m ai_research_agent.cli history
 ```
 
+## Social Media Discovery (Optional)
+
+Social media discovery is **disabled by default** and is opt-in via the `--social` flag. When enabled, the agent can discover signals from:
+
+| Platform | API Required | Status |
+|----------|-------------|--------|
+| YouTube | `YOUTUBE_API_KEY` env var | Implemented (YouTube Data API v3) |
+| X (Twitter) | `X_BEARER_TOKEN` env var | Implemented (API v2) |
+| Facebook | OAuth app review | Not implemented (placeholder) |
+| Instagram | OAuth app review | Not implemented (placeholder) |
+| LinkedIn | OAuth app review | Not implemented (placeholder) |
+
+**Important:** Social media results are **discovery signals only** — never treated as technical proof or primary evidence. Any claim surfaced from social media must be backed by a primary source (arXiv paper, lab announcement, technical report) before inclusion in the roundup.
+
+```bash
+# Enable social media discovery (requires API keys set as env vars)
+export YOUTUBE_API_KEY=your_key
+export X_BEARER_TOKEN=your_token
+python -m ai_research_agent.cli run --topics "agentic AI" --window 7 --social
+```
+
+No credentials are stored in the repository. API keys/tokens must be supplied at runtime via environment variables.
+
 ## Sample Run
 
 Running `python -m ai_research_agent.cli run --topics "agentic AI" --window 7` produces a roundup report showing each candidate's assessment, score, supporting evidence, limitations, and ranking rationale. A machine-readable run artifact is saved as `run_artifacts/run_<run_id>.json` and indexed in `data/run_state.db`.
@@ -128,6 +152,7 @@ Tests cover:
 4. **No web UI**: CLI only; web UI is optional and not implemented.
 5. **Embedding model**: `all-MiniLM-L6-v2` is downloaded on first use (~80MB).
 6. **Vector store**: Local ChromaDB instance; not distributed or production-scale.
+7. **Social media**: Disabled by default. YouTube/X require API keys at runtime; Facebook, Instagram, LinkedIn are not implemented (require OAuth app review). Social results are discovery signals only, never primary evidence.
 
 ## Safety
 
