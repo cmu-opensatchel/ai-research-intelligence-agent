@@ -49,12 +49,29 @@ def run(
     # Display rankings table
     if result["rankings"]:
         table = Table(title="Candidate Rankings")
-        table.add_column("Rank", style="cyan")
-        table.add_column("Title", style="white")
-        table.add_column("Assessment", style="magenta")
+        table.add_column("Rank", style="cyan", width=6)
+        table.add_column("Title", style="white", width=50)
+        table.add_column("Source", style="magenta", width=30)
+        table.add_column("Link", style="cyan", width=40)
+        table.add_column("Assessment", style="green")
         table.add_column("Score", style="yellow")
+
+        # Build a lookup from candidate_id to candidate for readable titles
+        candidate_lookup = {c.id: c for c in result["candidates"]}
+
         for i, entry in enumerate(result["rankings"], 1):
-            table.add_row(str(i), entry.get("candidate_id", "")[:8], entry["best_assessment"], str(entry["best_score"]))
+            cand = candidate_lookup.get(entry["candidate_id"])
+            title = cand.title if cand else entry.get("candidate_id", "")[:8]
+            source_title = cand.source.title if cand and cand.source else ""
+            source_url = cand.source.url if cand and cand.source else ""
+            # Truncate long display strings
+            title_disp = (title[:47] + "…") if len(title) > 47 else title
+            source_disp = (source_title[:27] + "…") if len(source_title) > 27 else source_title
+            url_disp = (source_url[:37] + "…") if len(source_url) > 37 else source_url
+            table.add_row(
+                str(i), title_disp, source_disp, url_disp,
+                entry["best_assessment"], str(entry["best_score"]),
+            )
         console.print(table)
 
     # Display errors if any
