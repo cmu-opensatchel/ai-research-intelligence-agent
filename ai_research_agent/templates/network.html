@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Network Graph{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-4">AI Domain Network</h1>
+<p class="text-gray-600 mb-6">Interactive network of AI research domains.</p>
+
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 h-[70vh] flex">
+    <div class="w-64 bg-gray-50 border-r border-gray-200 p-4">
+        <h3 class="font-semibold mb-3">Controls</h3>
+        <div class="space-y-3">
+            <label class="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" checked class="node-type-filter w-4 h-4" data-type="topic">
+                <span>Topics</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" checked class="node-type-filter w-4 h-4" data-type="source_type">
+                <span>Source Types</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" checked class="node-type-filter w-4 h-4" data-type="venue">
+                <span>Venues</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" checked class="node-type-filter w-4 h-4" data-type="huggingface">
+                <span>HF Models</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" checked class="node-type-filter w-4 h-4" data-type="organization">
+                <span>Organizations</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" checked class="node-type-filter w-4 h-4" data-type="candidate">
+                <span>Candidates</span>
+            </label>
+        </div>
+        <div class="mt-6">
+            <label class="block text-sm font-medium mb-2">Min Edge Weight</label>
+            <input type="range" min="1" max="10" value="1" class="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600" id="edge-weight-filter">
+        </div>
+    </div>
+    <div class="flex-1 relative">
+        <svg id="network-svg" class="w-full h-full"></svg>
+        <div id="tooltip" class="hidden absolute p-3 bg-gray-900 text-white rounded-lg shadow text-sm z-50 pointer-events-none max-w-[250px]">
+            <div id="tooltip-name" class="font-bold mb-1"></div>
+            <div id="tooltip-type" class="text-xs text-gray-300 mb-1"></div>
+            <div id="tooltip-details" class="text-xs"></div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <p class="text-xs text-gray-500 font-medium">Total Nodes</p>
+        <p class="text-2xl font-bold text-gray-900" id="stat-nodes">-</p>
+    </div>
+    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <p class="text-xs text-gray-500 font-medium">Total Edges</p>
+        <p class="text-2xl font-bold text-gray-900" id="stat-edges">-</p>
+    </div>
+    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <p class="text-xs text-gray-500 font-medium">Node Types</p>
+        <p class="text-2xl font-bold text-gray-900" id="stat-types">-</p>
+    </div>
+    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <p class="text-xs text-gray-500 font-medium">Runs Analyzed</p>
+        <p class="text-2xl font-bold text-gray-900" id="stat-runs">-</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="{{ url_for('static', filename='js/network.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,46 @@
+/* AI Research Intelligence Agent - Web UI Styles */
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Node tooltip transitions */
+#tooltip {
+    transition: opacity 0.2s ease-in-out;
+}
+
+/* Network graph container */
+#network-svg {
+    overflow: visible;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .w-80 {
+        width: 64px !important;
+        overflow: hidden;
+        transition: width 0.3s ease;
+    }
+    .w-80:hover {
+        width: 256px !important;
+    }
+}
+
+/* Focus states for accessibility */
+button:focus,
+input:focus {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+}
