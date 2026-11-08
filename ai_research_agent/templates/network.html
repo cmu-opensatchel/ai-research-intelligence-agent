@@ -39,6 +39,12 @@
             <label class="block text-sm font-medium mb-2">Min Edge Weight</label>
             <input type="range" min="1" max="10" value="1" class="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600" id="edge-weight-filter">
         </div>
+        <div class="mt-6">
+            <label class="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" class="w-4 h-4 text-indigo-600 rounded" id="show-isolated">
+                <span>Show isolated nodes</span>
+            </label>
+        </div>
     </div>
     <div class="flex-1 relative">
         <svg id="network-svg" class="w-full h-full"></svg>

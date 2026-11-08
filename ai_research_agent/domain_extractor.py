@@ -65,6 +65,66 @@ def extract_entities_from_run(artifact: RunArtifact) -> Tuple[List[dict], List[d
                 "run_id": run_id,
             })
 
+    # --- Candidate nodes and edges ---
+    candidate_ids = []
+    for candidate in artifact.candidates:
+        cnode = f"cand:{candidate.id[:8]}"
+        candidate_ids.append(cnode)
+        nodes[cnode] = {
+            "id": cnode,
+            "label": candidate.title[:60],
+            "type": "candidate",
+            "first_seen": timestamp,
+            "last_seen": timestamp,
+            "run_count": 1,
+            "sources": [candidate.source.url],
+            "assessment": "significant advance",  # placeholder; filled from ToT in history
+            "score": 74,  # placeholder
+            "source_url": candidate.source.url,
+        }
+
+        # Edge: candidate -> topic (what it's about)
+        for topic in candidate.topics:
+            edges.append({
+                "source": cnode,
+                "target": f"topic:{topic.lower()}",
+                "type": "candidate_topic",
+                "weight": 1,
+                "run_id": run_id,
+            })
+
+        # Edge: candidate -> source_type (where it came from)
+        edges.append({
+            "source": cnode,
+            "target": f"source:{candidate.source.source_type}",
+            "type": "candidate_source",
+            "weight": 1,
+            "run_id": run_id,
+        })
+
+    # Edge: candidate -> candidate (co-occurring in same run)
+    for i, c1 in enumerate(candidate_ids):
+        for c2 in candidate_ids[i+1:]:
+            edges.append({
+                "source": c1,
+                "target": c2,
+                "type": "candidate_candidate",
+                "weight": 1,
+                "run_id": run_id,
+            })
+
+    # Edge: topic -> topic (co-occurring in same run)
+    topic_ids = [f"topic:{t.lower()}" for t in artifact.topics]
+    for i, t1 in enumerate(topic_ids):
+        for t2 in topic_ids[i+1:]:
+            edges.append({
+                "source": t1,
+                "target": t2,
+                "type": "topic_topic",
+                "weight": 1,
+                "run_id": run_id,
+            })
+
     _add_conference_nodes(artifact, nodes, timestamp, run_id)
     _add_huggingface_nodes(artifact, nodes, timestamp, run_id)
     _add_organization_nodes(artifact, nodes, timestamp, run_id)
