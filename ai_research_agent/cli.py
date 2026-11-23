@@ -25,6 +25,7 @@ def run(
     window: int = typer.Option(30, help="Reporting window in days"),
     urls: str = typer.Option("", help="Comma-separated lab announcement URLs (optional)"),
     social: bool = typer.Option(False, help="Enable social media discovery (requires API keys; discovery signals only)"),
+    use_llm_verification: bool = typer.Option(False, help="Enable Qwen3-8B local LLM for claim verification"),
 ):
     """Run the AI research intelligence workflow."""
     topic_list = [t.strip() for t in topics.split(",") if t.strip()]
