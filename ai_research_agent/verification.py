@@ -12,12 +12,16 @@ A citation existing is not enough; the cited passage must support the claim.
 If evidence is insufficient, qualify the claim, mark it unresolved, or omit it.
 """
 
+import logging
 from datetime import datetime, timezone
 from typing import List, Optional
 
 from .config import AgentConfig
+from .llm import OllamaClient
 from .models import Candidate, Passage, VerificationResult
 from .retrieval import Retriever, passages_support_claim
+
+logger = logging.getLogger(__name__)
 
 
 class EvidenceVerifier:
@@ -26,6 +30,17 @@ class EvidenceVerifier:
     def __init__(self, config: Optional[AgentConfig] = None, retriever: Optional[Retriever] = None):
         self.cfg = config or AgentConfig()
         self.retriever = retriever or Retriever(config=self.cfg)
+        self.llm: Optional[OllamaClient] = None
+        if self.cfg.use_llm_verification:
+            client = OllamaClient(self.cfg)
+            if client.is_available():
+                self.llm = client
+            else:
+                logger.warning(
+                    "LLM verification requested but Ollama model %s is unavailable at %s; "
+                    "falling back to heuristic verification.",
+                    self.cfg.ollama_model, self.cfg.ollama_url,
+                )
 
     def verify_candidate(self, candidate: Candidate, claim: str) -> VerificationResult:
         """Verify a claim for a candidate using retrieval + evidence checks."""
@@ -42,7 +57,42 @@ class EvidenceVerifier:
         self._check_context_sufficiency(result, all_passages)
         self._check_primary_source_support(result, all_passages, candidate)
 
+        if self.llm is not None:
+            self._llm_verify(result, claim, all_passages)
+
         return result
+
+    def _llm_verify(self, result: VerificationResult, claim: str, passages: List[Passage]) -> None:
+        """Refine the heuristic verdict with the local LLM (recorded as model interpretation).
+
+        The LLM may confirm, downgrade, or flag contradictions. It can only mark a claim
+        supported if it cites at least one passage. On failure the heuristic result stands.
+        """
+        judgment = self.llm.judge_claim(claim, passages[:6])
+        if judgment is None:
+            result.notes += " LLM verification unavailable for this claim; heuristic result used."
+            return
+
+        verdict = judgment["verdict"]
+        cited = [passages[n - 1] for n in judgment["supporting"]]
+        if verdict == "supported" and cited:
+            result.supported = True
+            result.insufficient_evidence = False
+            result.evidence_passages = cited
+            result.confidence = judgment["confidence"]
+        elif verdict == "partial":
+            result.supported = False
+            result.insufficient_evidence = True
+            result.confidence = min(result.confidence, judgment["confidence"])
+        elif verdict == "contradicted":
+            result.supported = False
+            result.contradictions.append(judgment["reason"])
+            result.confidence = 0.0
+        else:  # unsupported, or "supported" without any cited passage
+            result.supported = False
+            result.insufficient_evidence = True
+            result.confidence = min(result.confidence, 0.3)
+        result.notes += f" [LLM interpretation, {self.cfg.ollama_model}: {verdict} - {judgment['reason']}]"
 
     def _check_source_identifiability(self, result: VerificationResult, passages: List[Passage]) -> None:
         """Ensure each passage has an identifiable source URL and metadata."""

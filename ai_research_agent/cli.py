@@ -35,6 +35,7 @@ def run(
 
     cfg = AgentConfig()
     cfg.enable_social_discovery = social
+    cfg.use_llm_verification = use_llm_verification
 
     result = run_workflow(
         topics=topic_list,

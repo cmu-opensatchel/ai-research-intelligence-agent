@@ -81,6 +81,11 @@ SOCIAL_MAX_RESULTS_PER_PLATFORM: int = 5
 YOUTUBE_API_KEY: str = ""  # set via YOUTUBE_API_KEY env var at runtime
 X_BEARER_TOKEN: str = ""   # set via X_BEARER_TOKEN env var at runtime
 
+# Local LLM (Ollama) for optional claim verification
+OLLAMA_URL: str = "http://localhost:11434"
+OLLAMA_MODEL: str = "hf.co/Qwen/Qwen3-8B-GGUF:Q4_K_M"
+OLLAMA_TIMEOUT: int = 120
+
 
 @dataclass
 class AgentConfig:
@@ -107,3 +112,7 @@ class AgentConfig:
     youtube_api_key: str = YOUTUBE_API_KEY
     x_bearer_token: str = X_BEARER_TOKEN
     rss_feed_urls: List[str] = field(default_factory=lambda: list(DEFAULT_LAB_RSS_FEEDS))
+    use_llm_verification: bool = False
+    ollama_url: str = OLLAMA_URL
+    ollama_model: str = OLLAMA_MODEL
+    ollama_timeout: int = OLLAMA_TIMEOUT
