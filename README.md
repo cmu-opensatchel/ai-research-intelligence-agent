@@ -8,6 +8,8 @@ A multi-agent system for monitoring, verifying, and synthesizing emerging AI dev
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
+- [Local LLM Verification (Qwen3-8B via Ollama)](#local-llm-verification-qwen3-8b-via-ollama)
+- [Web UIs](#web-uis)
 - [Sample Run](#sample-run)
 - [Inspecting Evidence and ToT Artifacts](#inspecting-evidence-and-tot-artifacts)
 - [Testing](#testing)
@@ -23,7 +25,8 @@ The system is implemented as a Python package (`ai_research_agent/`) with separa
 | `discovery.py` | Source discovery from arXiv, GitHub, and lab announcements |
 | `parser.py` | Document parsing and chunking with metadata preservation |
 | `retrieval.py` | Sentence-transformer embeddings + ChromaDB vector store, semantic search |
-| `verification.py` | Evidence verification (source identifiability, claim support, date window, context) |
+| `verification.py` | Evidence verification (source identifiability, claim support, date window, context) plus optional LLM judging |
+| `llm.py` | Ollama client for local Qwen3-8B claim judging (never raises; falls back to heuristics) |
 | `tot.py` | Bounded Tree of Thought impact assessment (beam width 2, depth 2) |
 | `social_discovery.py` | Optional social media discovery (YouTube, X; Facebook/Instagram/LinkedIn placeholders) |
 | `huggingface_discovery.py` | Hugging Face models/datasets discovery (public API, no key) |
@@ -34,6 +37,9 @@ The system is implemented as a Python package (`ai_research_agent/`) with separa
 | `coordinator.py` | Workflow orchestration and run artifact creation |
 | `storage.py` | SQLite run state + JSON artifact persistence |
 | `cli.py` | Command-line interface (Typer + Rich) |
+| `web.py` | Flask web UI with D3.js network graph |
+
+At the repo root, `web_ui_streamlit.py` provides a Streamlit front end that runs the CLI.
 
 No CrewAI, LangChain, or MCP is used — the design uses the simplest tools that support the required behavior and is easy to extend.
 
@@ -52,7 +58,7 @@ cd c:\Users\Mumu\Documents\CMU_AgenticAI\code
 pip install -r requirements.txt
 ```
 
-Requirements include: `requests`, `beautifulsoup4`, `feedparser`, `sentence-transformers`, `chromadb`, `rich`, `typer`, `pydantic`, `pytest`.
+Requirements include: `requests`, `beautifulsoup4`, `feedparser`, `sentence-transformers`, `chromadb`, `rich`, `typer`, `pydantic`, `pytest`, `flask`, `streamlit`.
 
 ## Configuration
 
@@ -66,6 +72,9 @@ TOT_BEAM_WIDTH = 2
 TOT_MAX_DEPTH = 2
 TOT_MIN_SCORE = 50
 SCORING_RUBRIC = {"evidence_quality": 35, "relevance": 25, "novelty": 20, "practical_value": 20}
+OLLAMA_URL = "http://localhost:11434"
+OLLAMA_MODEL = "hf.co/Qwen/Qwen3-8B-GGUF:Q4_K_M"
+OLLAMA_TIMEOUT = 120
 ```
 
 Topics and reporting window are configurable at runtime via the CLI. No credentials are stored in the repository.
@@ -84,6 +93,34 @@ python -m ai_research_agent.cli run --topics "GNNs" --window 30 --urls "https://
 
 # View run history
 python -m ai_research_agent.cli history
+```
+
+## Local LLM Verification (Qwen3-8B via Ollama)
+
+Optional, off by default. After the heuristic check (embedding similarity + keyword overlap), a local Qwen3-8B model reads the retrieved passages and judges whether they support the claim.
+
+Setup:
+
+```bash
+ollama pull hf.co/Qwen/Qwen3-8B-GGUF:Q4_K_M   # model name must match OLLAMA_MODEL
+python -m ai_research_agent.cli run --topics "agentic AI" --window 7 --use-llm-verification
+```
+
+Behavior:
+- The model returns a verdict (`supported`, `partial`, `unsupported`, `contradicted`), a confidence, the numbered supporting passages, and a one-sentence reason.
+- It can downgrade a claim or record a contradiction. It can mark a claim supported only if it cites at least one retrieved passage.
+- Its verdict is appended to the result notes as `[LLM interpretation, <model>: ...]`, keeping model interpretation separate from retrieved evidence.
+- If Ollama or the model is unavailable, or the output is invalid, a warning is logged and the heuristic result is used. A run never fails because of the LLM.
+- Retrieved text is passed to the model as data only, and the model has no tools.
+
+## Web UIs
+
+```bash
+# Streamlit UI (runs the CLI; has an "Enable LLM Verification" checkbox)
+python -m streamlit run web_ui_streamlit.py     # http://localhost:8501
+
+# Flask UI with D3.js network graph
+python -m ai_research_agent.web
 ```
 
 ## Social Media Discovery (Optional)
@@ -167,7 +204,7 @@ Run artifacts are stored in `run_artifacts/` and the run index in `data/run_stat
 
 ```bash
 # Run all tests
-python -m pytest tests/ -v
+python -m pytest tests/ -v   # 55 tests
 
 # Run a specific test file
 python -m pytest tests/test_tot.py -v
@@ -179,6 +216,7 @@ Tests cover:
 - Claim-support checks and insufficient-evidence handling
 - ToT branch limits, scoring, pruning, and tie-breaking
 - Deduplication and report generation
+- LLM verification (Ollama mocked): downgrade, citation requirement, contradictions, fallback on failure or unavailability
 - Handling unavailable sources or malformed responses
 - A retrieved passage changing/qualifying the agent's initial assessment (illustrative mock data)
 
@@ -186,8 +224,8 @@ Tests cover:
 
 1. **Discovery is read-only**: arXiv API and GitHub Search API are used without authentication, which may be rate-limited.
 2. **Content fetching is limited**: Full paper PDFs are not downloaded; arXiv abstracts and GitHub repository descriptions are used as content.
-3. **Verification is heuristic**: Claim-support checking uses semantic similarity and keyword overlap, not LLM-based judgment. This is a prototype limitation.
-4. **No web UI**: CLI only; web UI is optional and not implemented.
+3. **Verification is mostly heuristic**: By default claim support uses semantic similarity and keyword overlap. The optional local LLM judge (`--use-llm-verification`) improves this but is an 8B quantized model reading at most 6 passages per claim; its verdicts are interpretation, not proof, and it adds latency.
+4. **Web UIs are thin**: The Streamlit UI shells out to the CLI and parses its text output; the Flask UI is a visualization aid.
 5. **Embedding model**: `all-MiniLM-L6-v2` is downloaded on first use (~80MB).
 6. **Vector store**: Local ChromaDB instance; not distributed or production-scale.
 7. **Social media**: Disabled by default. YouTube/X require API keys at runtime; Facebook, Instagram, LinkedIn are not implemented (require OAuth app review). Social results are discovery signals only, never primary evidence.
