@@ -7,7 +7,7 @@
 """
 
 import re
-import uuid
+import hashlib
 from typing import List, Optional
 
 import chromadb
@@ -37,7 +37,11 @@ class Retriever:
         texts = [p.text for p in passages]
         embeddings = self.embedding_model.encode(texts, show_progress_bar=False).tolist()
 
-        ids = [str(uuid.uuid4()) for _ in passages]
+        # Deterministic ids make indexing idempotent: re-indexing the same chunk upserts instead of duplicating it.
+        ids = [
+            hashlib.sha1(f"{p.source_url}|{p.chunk_index}|{p.text}".encode("utf-8")).hexdigest()
+            for p in passages
+        ]
         metadatas = [
             {
                 "source_url": p.source_url,
@@ -52,45 +56,73 @@ class Retriever:
             for p in passages
         ]
 
-        self.collection.add(ids=ids, embeddings=embeddings, documents=texts, metadatas=metadatas)
+        self.collection.upsert(ids=ids, embeddings=embeddings, documents=texts, metadatas=metadatas)
         return len(passages)
 
     def retrieve(self, query: str, top_k: int = TOP_K_INITIAL) -> List[Passage]:
-        """Issue a focused semantic query and return top-k relevant passages."""
-        if self.collection.count() == 0:
+        """Issue a focused semantic query and return up to top_k *distinct* relevant passages.
+
+        Older runs indexed the same chunk many times, so the query over-fetches and widens until it
+        has top_k distinct chunks (or has scanned the whole collection).
+        """
+        total = self.collection.count()
+        if total == 0:
             return []
 
         query_embedding = self.embedding_model.encode([query], show_progress_bar=False).tolist()[0]
-        results = self.collection.query(
-            query_embeddings=[query_embedding],
-            n_results=min(top_k, self.collection.count()),
-            include=["documents", "metadatas", "distances"],
-        )
-
-        passages: List[Passage] = []
-        docs = results.get("documents", [[]])[0]
-        metas = results.get("metadatas", [[]])[0]
-        dists = results.get("distances", [[]])[0]
-
-        for doc, meta, dist in zip(docs, metas, dists):
-            passages.append(
-                Passage(
-                    text=doc,
-                    source_url=meta.get("source_url", ""),
-                    source_title=meta.get("source_title", ""),
-                    section=meta.get("section") or None,
-                    chunk_index=meta.get("chunk_index", 0),
-                    metadata={
-                        "source_type": meta.get("source_type", ""),
-                        "publication_date": meta.get("publication_date") or None,
-                        "retrieval_time": meta.get("retrieval_time", ""),
-                        "discovered_by": meta.get("discovered_by", ""),
-                        "retrieval_distance": float(dist),
-                    },
-                )
+        n = min(top_k * 5, total)
+        while True:
+            results = self.collection.query(
+                query_embeddings=[query_embedding],
+                n_results=n,
+                include=["documents", "metadatas", "distances"],
             )
+            docs = results.get("documents", [[]])[0]
+            metas = results.get("metadatas", [[]])[0]
+            dists = results.get("distances", [[]])[0]
 
-        return passages
+            passages: List[Passage] = []
+            seen = set()
+            for doc, meta, dist in zip(docs, metas, dists):
+                key = (meta.get("source_url", ""), meta.get("chunk_index", 0), doc)
+                if key in seen:
+                    continue
+                seen.add(key)
+                passages.append(
+                    Passage(
+                        text=doc,
+                        source_url=meta.get("source_url", ""),
+                        source_title=meta.get("source_title", ""),
+                        section=meta.get("section") or None,
+                        chunk_index=meta.get("chunk_index", 0),
+                        metadata={
+                            "source_type": meta.get("source_type", ""),
+                            "publication_date": meta.get("publication_date") or None,
+                            "retrieval_time": meta.get("retrieval_time", ""),
+                            "discovered_by": meta.get("discovered_by", ""),
+                            "retrieval_distance": float(dist),
+                        },
+                    )
+                )
+                if len(passages) >= top_k:
+                    return passages
+            if n >= total:
+                return passages
+            n = min(n * 4, total)
+
+    def dedupe_store(self) -> int:
+        """Delete duplicate chunks (same source, chunk index and text), keeping one. Returns number removed."""
+        data = self.collection.get(include=["documents", "metadatas"], limit=self.collection.count())
+        seen, drop = set(), []
+        for _id, doc, meta in zip(data["ids"], data["documents"], data["metadatas"]):
+            key = (meta.get("source_url", ""), meta.get("chunk_index", 0), doc)
+            if key in seen:
+                drop.append(_id)
+            else:
+                seen.add(key)
+        for i in range(0, len(drop), 500):
+            self.collection.delete(ids=drop[i : i + 500])
+        return len(drop)
 
     def retrieve_for_claim(
         self, claim: str, candidate_title: str = ""

@@ -114,16 +114,27 @@ class ToTAssessor:
             evidence_score = 10
 
         relevance_score = int(25 * min(candidate.relevance_score, 1.0))
-        novelty_score = self._assess_novelty(assessment, candidate, passages)
+        novelty_score = self._assess_novelty(assessment, candidate, passages, bool(supporting))
         practical_score = self._assess_practical_value(assessment, candidate)
 
-        return evidence_score + relevance_score + novelty_score + practical_score
+        total = evidence_score + relevance_score + novelty_score + practical_score
 
-    def _assess_novelty(self, assessment: str, candidate: Candidate, passages: List[Passage]) -> int:
+        # Gate: if verification ran and found no supporting evidence, a positive assessment must not
+        # survive on relevance/novelty/practical points alone (retrieval failure must not become a conclusion).
+        is_positive = any(w in assessment.lower() for w in ("significant", "promising"))
+        if is_positive and verification_results and not supporting:
+            return min(total, self.cfg.tot_min_score - 1)
+        return total
+
+    def _assess_novelty(
+        self, assessment: str, candidate: Candidate, passages: List[Passage], evidence_supported: bool = True
+    ) -> int:
         """Assess novelty and significance (0-20)."""
         assessment_lower = assessment.lower()
         if "significant advance" in assessment_lower:
-            return 20 if len(passages) > 0 else 10
+            # Full credit needs retrieved passages that verification found to support the claim;
+            # merely retrieving (possibly off-topic) passages is not evidence.
+            return 20 if (len(passages) > 0 and evidence_supported) else 10
         if "promising" in assessment_lower:
             return 12
         if "insufficient" in assessment_lower:

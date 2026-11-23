@@ -102,3 +102,26 @@ def test_rank_candidates_sorting():
     rankings = rank_candidates(candidate_branches)
     assert len(rankings) == 2
     assert rankings[0]["best_score"] >= rankings[1]["best_score"]
+
+def test_unsupported_retrieved_passages_do_not_yield_positive_conclusion():
+    """Merely retrieving passages (e.g. off-topic ones) must not earn a positive assessment."""
+    from ai_research_agent.models import Passage
+
+    assessor = ToTAssessor(config=AgentConfig())
+    candidate = make_candidate("c1", "Quantum error correction")
+    passages = [Passage(text="unrelated text about image compression", source_url="http://x", source_title="X")]
+    vresults = [make_verification_result(supported=False, confidence=0.1)]
+    branches = assessor.assess_candidate(candidate, passages, vresults)
+    assert not any("significant" in b.assessment.lower() for b in branches)
+
+
+def test_high_relevance_cannot_rescue_unsupported_claim():
+    """Even a highly relevant candidate gets no positive assessment when verification found no support."""
+    from ai_research_agent.models import Passage
+
+    assessor = ToTAssessor(config=AgentConfig())
+    candidate = make_candidate("c2", "Off-topic claim", relevance_score=1.0)
+    passages = [Passage(text="unrelated", source_url="http://x", source_title="X")]
+    vresults = [make_verification_result(supported=False, confidence=0.1, insufficient=True)]
+    branches = assessor.assess_candidate(candidate, passages, vresults)
+    assert not any(("significant" in b.assessment.lower() or "promising" in b.assessment.lower()) and not b.pruned for b in branches)

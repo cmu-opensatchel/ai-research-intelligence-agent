@@ -1,0 +1,175 @@
+
+====================================================================================================
+0. CORPUS (external data discovered from public sources by earlier runs)
+====================================================================================================
+  unique chunks indexed: 157 (store entries: 157). Earlier runs had re-indexed chunks up to 33 times (1,038 entries); Retriever.dedupe_store() removed 881 exact duplicates.
+  by source type : {'arxiv': 80, 'huggingface': 77}
+  distinct sources: 125
+  embedding model: all-MiniLM-L6-v2 | chunk size 1200 chars, overlap 150 | top-k 5 (+5 follow-up if weak)
+
+====================================================================================================
+1. SEMANTIC RETRIEVAL EXECUTED: three queries
+====================================================================================================
+
+QUERY: 'Enterprise retrieval and agent systems need multitenant security isolation'
+  [1] distance=0.382 (similarity 0.618) | arxiv | 2026-05-06
+      Securing the Agent: Vendor-Neutral, Multitenant Enterprise Retrieval and Tool Use
+      http://arxiv.org/abs/2605.05287v1
+      "Retrieval-Augmented Generation (RAG) and agentic AI systems are increasingly prevalent in enterprise AI deployments. However, real enterprise environments introduce challenges largely absent from academic treatments and consumer-f..."
+  [2] distance=0.475 (similarity 0.525) | arxiv | 2026-05-06
+      Securing the Agent: Vendor-Neutral, Multitenant Enterprise Retrieval and Tool Use
+      http://arxiv.org/abs/2605.05287v1
+      "ation architecture combining policy-aware ingestion, retrieval-time gating, and shared inference, enforced through server-side agentic orchestration. This approach centralizes security-critical operations--tool execution authoriza..."
+  [3] distance=0.475 (similarity 0.525) | arxiv | 2025-11-20
+      Trustworthy AI in the Agentic Lakehouse: from Concurrency to Governance
+      http://arxiv.org/abs/2511.16402v1
+      "Even as AI capabilities improve, most enterprises do not consider agents trustworthy enough to work on production data. In this paper, we argue that the path to trustworthy agentic workflows begins with solving the infrastructure..."
+  [4] distance=0.500 (similarity 0.500) | arxiv | 2026-05-17
+      Towards trustworthy agentic AI: a comprehensive survey of safety, robustness, privacy, and system security
+      http://arxiv.org/abs/2605.23989v1
+      "signals (e.g., constraint violations, trace completeness, and adversarial success rates) and offering scenario-to-metric guidance for release gating. We conclude by outlining open challenges such as self-evolving agents, runtime m..."
+  [5] distance=0.568 (similarity 0.432) | arxiv | 2026-03-19
+      Security, privacy, and agentic AI in a regulatory view: From definitions and distinctions to provisions and reflections
+      http://arxiv.org/abs/2603.18914v1
+      "to articulate the current state of regulatory provisions targeting different types of AI, particularly those related to security and privacy aspects. We analyze and reflect on the existing provisions in the regulatory dimension to..."
+  -> follow-up retrieval triggered: no
+
+QUERY: 'Safety and robustness risks of autonomous AI agents'
+  [1] distance=0.417 (similarity 0.583) | arxiv | 2024-06-16
+      Current state of LLM Risks and AI Guardrails
+      http://arxiv.org/abs/2406.12934v1
+      "Large language models (LLMs) have become increasingly sophisticated, leading to widespread deployment in sensitive applications where safety and reliability are paramount. However, LLMs have inherent risks accompanying them, inclu..."
+  [2] distance=0.465 (similarity 0.535) | arxiv | 2026-05-17
+      Towards trustworthy agentic AI: a comprehensive survey of safety, robustness, privacy, and system security
+      http://arxiv.org/abs/2605.23989v1
+      "Agentic AI systems -- Large Language Models (LLMs) augmented with planning, tool use, memory, and long-horizon interactions -- can execute complex tasks autonomously, but their multi-step trajectories introduce new failure modes t..."
+  [3] distance=0.501 (similarity 0.499) | arxiv | 2026-03-19
+      Security, privacy, and agentic AI in a regulatory view: From definitions and distinctions to provisions and reflections
+      http://arxiv.org/abs/2603.18914v1
+      "to articulate the current state of regulatory provisions targeting different types of AI, particularly those related to security and privacy aspects. We analyze and reflect on the existing provisions in the regulatory dimension to..."
+  [4] distance=0.528 (similarity 0.472) | arxiv | 2026-01-16
+      POLARIS: Typed Planning and Governed Execution for Agentic AI in Back-Office Automation
+      http://arxiv.org/abs/2601.11816v1
+      "es 0.95 to 1.00 precision for anomaly routing with preserved audit trails. These evaluations constitute an initial benchmark for governed Agentic AI. POLARIS provides a methodological and benchmark reference for policy-aligned Age..."
+  [5] distance=0.546 (similarity 0.454) | arxiv | 2026-05-17
+      Towards trustworthy agentic AI: a comprehensive survey of safety, robustness, privacy, and system security
+      http://arxiv.org/abs/2605.23989v1
+      "signals (e.g., constraint violations, trace completeness, and adversarial success rates) and offering scenario-to-metric guidance for release gating. We conclude by outlining open challenges such as self-evolving agents, runtime m..."
+  -> follow-up retrieval triggered: no
+
+QUERY: 'Open models released for multimodal vision-language tasks'
+  [1] distance=0.403 (similarity 0.597) | arxiv | 2024-03-27
+      An Image Grid Can Be Worth a Video: Zero-shot Video Question Answering Using a VLM
+      http://arxiv.org/abs/2403.18406v1
+      "an image grid. This format, while maintaining the appearance of a solitary image, effectively retains temporal information within the grid structure. Therefore, the image grid approach enables direct application of a single high-p..."
+  [2] distance=0.412 (similarity 0.588) | arxiv | 2026-08-07
+      SABRE: Scalable and Automated Benchmarking of VLMs under Stress
+      http://arxiv.org/abs/2608.07435v1
+      "Vision-language models (VLMs) are improving rapidly, but benchmark development lags behind, making weaknesses hard to identify. Building stress tests is costly: samples must satisfy controlled conditions, remain answerable, and ch..."
+  [3] distance=0.416 (similarity 0.584) | arxiv | 2024-03-27
+      An Image Grid Can Be Worth a Video: Zero-shot Video Question Answering Using a VLM
+      http://arxiv.org/abs/2403.18406v1
+      "Stimulated by the sophisticated reasoning capabilities of recent Large Language Models (LLMs), a variety of strategies for bridging video modality have been devised. A prominent strategy involves Video Language Models (VideoLMs),..."
+  [4] distance=0.417 (similarity 0.583) | arxiv | 2024-07-20
+      Can VLMs be used on videos for action recognition? LLMs are Visual Reasoning Coordinators
+      http://arxiv.org/abs/2407.14834v1
+      "Recent advancements have introduced multiple vision-language models (VLMs) demonstrating impressive commonsense reasoning across various domains. Despite their individual capabilities, the potential of synergizing these complement..."
+  [5] distance=0.424 (similarity 0.576) | arxiv | 2026-02-21
+      DUET-VLM: Dual stage Unified Efficient Token reduction for VLM Training and Inference
+      http://arxiv.org/abs/2602.18846v2
+      "Vision-language models (VLMs) have achieved remarkable multimodal understanding and reasoning capabilities, yet remain computationally expensive due to dense visual tokenization. Existing efficiency approaches either merge redunda..."
+  -> follow-up retrieval triggered: no
+
+====================================================================================================
+2. DOES RETRIEVAL CHANGE THE OUTPUT? grounded vs ungrounded assessment of the same candidate
+====================================================================================================
+CLAIM: 'Towards trustworthy agentic AI: a comprehensive survey of safety, robustness, privacy, and system security is a significant development in agentic AI'
+
+A) WITHOUT retrieval (no passages, no verification)
+   branches: [('insufficient evidence', 0)]
+   best    : ('insufficient evidence', 0)
+
+B) WITH retrieval + verification
+   retrieved 5 initial + 0 follow-up passages
+  [1] distance=0.318 (similarity 0.682) | arxiv | 2026-05-17
+      Towards trustworthy agentic AI: a comprehensive survey of safety, robustness, privacy, and system security
+      http://arxiv.org/abs/2605.23989v1
+      "signals (e.g., constraint violations, trace completeness, and adversarial success rates) and offering scenario-to-metric guidance for release gating. We conclude by outlining open challenges such as self-evolving agents, runtime m..."
+  [2] distance=0.340 (similarity 0.660) | arxiv | 2026-05-17
+      Towards trustworthy agentic AI: a comprehensive survey of safety, robustness, privacy, and system security
+      http://arxiv.org/abs/2605.23989v1
+      "Agentic AI systems -- Large Language Models (LLMs) augmented with planning, tool use, memory, and long-horizon interactions -- can execute complex tasks autonomously, but their multi-step trajectories introduce new failure modes t..."
+  [3] distance=0.365 (similarity 0.635) | arxiv | 2026-03-19
+      Security, privacy, and agentic AI in a regulatory view: From definitions and distinctions to provisions and reflections
+      http://arxiv.org/abs/2603.18914v1
+      "to articulate the current state of regulatory provisions targeting different types of AI, particularly those related to security and privacy aspects. We analyze and reflect on the existing provisions in the regulatory dimension to..."
+   verification: supported=True insufficient_evidence=False confidence=0.662
+   notes: Passage(s) found with sufficient semantic overlap. Primary source(s) found supporting this claim.
+   branches: [('significant advance', 63), ('significant advance (refined: significant advance)', 63), ('significant advance (refined: promising but limited)', 63), ('significant advance (refined: insufficient evidence)', 63)]
+   best    : ('significant advance', 63)
+
+====================================================================================================
+2b. RETRIEVAL QUALIFIES A PROMOTIONAL CLAIM (ungrounded vs grounded answer)
+====================================================================================================
+CLAIM TO REPORT: 'POLARIS achieves perfect precision across all agentic AI tasks'
+
+A) WITHOUT retrieval: nothing to check the claim against, so a summary can only repeat it:
+   -> "POLARIS achieves perfect precision across all agentic AI tasks."
+
+B) WITH retrieval: the passage the agent actually retrieved:
+   POLARIS: Typed Planning and Governed Execution for Agentic AI in Back-Office Automation | http://arxiv.org/abs/2601.11816v1
+   "es 0.95 to 1.00 precision for anomaly routing with preserved audit trails. These evaluations constitute an initial benchmark for governed Agentic AI. POLARIS provides a methodological and benchmark reference for policy-aligned Agentic AI. Keywords Agentic AI, Enterprise Automation, Back-Office Tasks, Benchmarks, Governance, Typed Planning, Evaluation"
+   -> grounded statement: the retrieved passage reports 0.95 to 1.00 precision for anomaly routing on an initial benchmark;
+      it does not show perfect precision across all agentic AI tasks, so the broad claim must be qualified.
+
+====================================================================================================
+3. FAILURE MODE 1: the corpus has nothing relevant (off-topic claim)
+====================================================================================================
+CLAIM: 'Quantum error correction on superconducting qubits reduced logical error rates'
+  [1] distance=0.738 (similarity 0.262) | arxiv | 2026-03-31
+      Prompt-Guided Prefiltering for VLM Image Compression
+      http://arxiv.org/abs/2604.00314v1
+      "s. Experiments on several VQA benchmarks show that our approach achieves a 25-50% average bitrate reduction while maintaining the same task accuracy. Our source code is available at https://github.com/bardia-az/pgp-vlm-compression..."
+  [2] distance=0.840 (similarity 0.160) | arxiv | 2023-07-24
+      Learning Resource Allocation Policy: Vertex-GNN or Edge-GNN?
+      http://arxiv.org/abs/2307.12480v2
+      "rong expressive ability due to the dimension compression. We proceed to provide necessary conditions for the GNNs to well learn the precoding policy. Simulation results validate the analyses and show that the Edge-GNNs can achieve..."
+  [3] distance=0.856 (similarity 0.144) | huggingface | n/a
+      Q-RAG/Ruler
+      https://huggingface.co/datasets/Q-RAG/Ruler
+      "Source: Q-RAG/Ruler. URL: https://huggingface.co/datasets/Q-RAG/Ruler. Content not fetched in this prototype...."
+  follow-up retrieval triggered: yes
+  verification: supported=False insufficient_evidence=True confidence=0.157
+  best assessment: ('insufficient evidence', 0)
+
+====================================================================================================
+4. FAILURE MODE 2: on-topic passages that do NOT support the specific (over-stated) claim
+====================================================================================================
+
+CLAIM: 'POLARIS achieves perfect precision across all agentic AI tasks'
+  [1] distance=0.382 (similarity 0.618) | arxiv | 2026-01-16
+      POLARIS: Typed Planning and Governed Execution for Agentic AI in Back-Office Automation
+      http://arxiv.org/abs/2601.11816v1
+      "es 0.95 to 1.00 precision for anomaly routing with preserved audit trails. These evaluations constitute an initial benchmark for governed Agentic AI. POLARIS provides a methodological and benchmark reference for policy-aligned Age..."
+  [2] distance=0.496 (similarity 0.504) | arxiv | 2026-01-16
+      POLARIS: Typed Planning and Governed Execution for Agentic AI in Back-Office Automation
+      http://arxiv.org/abs/2601.11816v1
+      "Enterprise back office workflows require agentic systems that are auditable, policy-aligned, and operationally predictable, capabilities that generic multi-agent setups often fail to deliver. We present POLARIS (Policy-Aware LLM A..."
+  heuristic check (similarity + keyword overlap): supported=True confidence=0.599   <-- topical match mistaken for support
+  with LLM judge: supported=False insufficient_evidence=True confidence=0.300
+  judge note: , hf.co/Qwen/Qwen3-8B-GGUF:Q4_K_M: unsupported - Passage 2 states POLARIS achieves 0.95 to 1.00 precision for anomaly routing but does not claim perfect precision across all agentic AI tasks.]
+  ToT result: no positive assessment survives (qualified/excluded)
+
+CLAIM: 'The trustworthy agentic AI survey proves that agents are safe to deploy in production'
+  [1] distance=0.330 (similarity 0.670) | arxiv | 2026-05-17
+      Towards trustworthy agentic AI: a comprehensive survey of safety, robustness, privacy, and system security
+      http://arxiv.org/abs/2605.23989v1
+      "Agentic AI systems -- Large Language Models (LLMs) augmented with planning, tool use, memory, and long-horizon interactions -- can execute complex tasks autonomously, but their multi-step trajectories introduce new failure modes t..."
+  [2] distance=0.386 (similarity 0.614) | arxiv | 2026-05-17
+      Towards trustworthy agentic AI: a comprehensive survey of safety, robustness, privacy, and system security
+      http://arxiv.org/abs/2605.23989v1
+      "signals (e.g., constraint violations, trace completeness, and adversarial success rates) and offering scenario-to-metric guidance for release gating. We conclude by outlining open challenges such as self-evolving agents, runtime m..."
+  heuristic check (similarity + keyword overlap): supported=True confidence=0.590   <-- topical match mistaken for support
+  with LLM judge: supported=False insufficient_evidence=True confidence=0.300
+  judge note: , hf.co/Qwen/Qwen3-8B-GGUF:Q4_K_M: unsupported - The passages discuss the challenges and risks associated with agentic AI systems but do not provide evidence that agents are safe to deploy in production.]
+  ToT result: no positive assessment survives (qualified/excluded)

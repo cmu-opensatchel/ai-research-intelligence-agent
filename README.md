@@ -13,6 +13,7 @@ A multi-agent system for monitoring, verifying, and synthesizing emerging AI dev
 - [MCP Server](#mcp-server)
 - [Sample Run](#sample-run)
 - [Inspecting Evidence and ToT Artifacts](#inspecting-evidence-and-tot-artifacts)
+- [Retrieval Evidence Demo](#retrieval-evidence-demo)
 - [Testing](#testing)
 - [Known Limitations](#known-limitations)
 - [Safety](#safety)
@@ -229,11 +230,21 @@ artifact = store.load_artifact(run_id)
 
 Run artifacts are stored in `run_artifacts/` and the run index in `data/run_state.db`.
 
+## Retrieval Evidence Demo
+
+`examples/checkpoint3_retrieval_demo.py` runs semantic retrieval against the real local vector store (nothing mocked) and prints: corpus statistics; retrieved passages with distances and source links; a grounded vs. ungrounded assessment of the same candidate; a promotional claim qualified by a retrieved passage; and two retrieval failure modes (nothing relevant in the corpus; on-topic passages that do not support an over-stated claim). Its saved output is in `examples/checkpoint3_retrieval_demo_output.txt`.
+
+```bash
+python examples/checkpoint3_retrieval_demo.py    # the LLM-judge step needs Ollama + Qwen3-8B
+```
+
+Retrieval behavior worth knowing: indexing is idempotent (deterministic chunk ids, upsert); `retrieve()` returns up to k *distinct* passages; `Retriever.dedupe_store()` removes exact duplicate chunks left by older runs; and the Tree of Thought stage gives no positive assessment when verification found no supporting evidence.
+
 ## Testing
 
 ```bash
 # Run all tests
-python -m pytest tests/ -v   # 64 tests
+python -m pytest tests/ -v   # 70 tests
 
 # Run a specific test file
 python -m pytest tests/test_tot.py -v

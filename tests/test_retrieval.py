@@ -112,3 +112,52 @@ def test_passages_support_claim_no_passages():
     assert result.supported is False
     assert result.insufficient_evidence is True
     assert result.confidence == 0.0
+
+def test_index_is_idempotent(retriever, sample_passages):
+    """Re-indexing the same chunks must not create duplicates."""
+    retriever.index_passages(sample_passages)
+    n = retriever.count()
+    retriever.index_passages(sample_passages)
+    assert retriever.count() == n
+
+
+def test_retrieve_dedupes_legacy_duplicates(retriever, sample_passages):
+    """Top-k must not be filled with copies of one chunk (older runs indexed chunks repeatedly)."""
+    retriever.index_passages(sample_passages)
+    got = retriever.collection.get(include=["documents", "metadatas", "embeddings"], limit=1)
+    retriever.collection.add(
+        ids=["legacy-dup-1", "legacy-dup-2"],
+        documents=got["documents"] * 2,
+        metadatas=got["metadatas"] * 2,
+        embeddings=[list(got["embeddings"][0])] * 2,
+    )
+    results = retriever.retrieve(got["documents"][0], top_k=5)
+    texts = [p.text for p in results]
+    assert len(texts) == len(set(texts))
+
+
+def test_retrieve_returns_k_distinct_even_with_many_copies(retriever, sample_passages):
+    """With many copies of a chunk stored, top-k still returns up to k distinct passages."""
+    retriever.index_passages(sample_passages)
+    got = retriever.collection.get(include=["documents", "metadatas", "embeddings"], limit=1)
+    n = 6
+    retriever.collection.add(
+        ids=[f"copy-{i}" for i in range(n)],
+        documents=got["documents"] * n,
+        metadatas=got["metadatas"] * n,
+        embeddings=[list(got["embeddings"][0])] * n,
+    )
+    results = retriever.retrieve(got["documents"][0], top_k=3)
+    assert len({p.text for p in results}) == min(3, len(sample_passages))
+
+
+def test_dedupe_store_removes_duplicates(retriever, sample_passages):
+    retriever.index_passages(sample_passages)
+    base = retriever.count()
+    got = retriever.collection.get(include=["documents", "metadatas", "embeddings"], limit=1)
+    retriever.collection.add(
+        ids=["d1", "d2"], documents=got["documents"] * 2, metadatas=got["metadatas"] * 2,
+        embeddings=[list(got["embeddings"][0])] * 2,
+    )
+    assert retriever.dedupe_store() == 2
+    assert retriever.count() == base
