@@ -10,6 +10,7 @@ A multi-agent system for monitoring, verifying, and synthesizing emerging AI dev
 - [Usage](#usage)
 - [Local LLM Verification (Qwen3-8B via Ollama)](#local-llm-verification-qwen3-8b-via-ollama)
 - [Web UIs](#web-uis)
+- [MCP Server](#mcp-server)
 - [Sample Run](#sample-run)
 - [Inspecting Evidence and ToT Artifacts](#inspecting-evidence-and-tot-artifacts)
 - [Testing](#testing)
@@ -38,10 +39,11 @@ The system is implemented as a Python package (`ai_research_agent/`) with separa
 | `storage.py` | SQLite run state + JSON artifact persistence |
 | `cli.py` | Command-line interface (Typer + Rich) |
 | `web.py` | Flask web UI with D3.js network graph |
+| `mcp_server.py` | MCP server (stdio) exposing the agent to Claude Desktop, Claude Code, and other MCP clients |
 
 At the repo root, `web_ui_streamlit.py` provides a Streamlit front end that runs the CLI.
 
-No CrewAI, LangChain, or MCP is used — the design uses the simplest tools that support the required behavior and is easy to extend.
+No CrewAI or LangChain is used — the design uses the simplest tools that support the required behavior and is easy to extend. MCP is used only as an interface layer (`mcp_server.py`) so external clients can call the agent, not for messaging between internal components.
 
 ### Agent Roles
 
@@ -122,6 +124,33 @@ python -m streamlit run web_ui_streamlit.py     # http://localhost:8501
 # Flask UI with D3.js network graph
 python -m ai_research_agent.web
 ```
+
+## MCP Server
+
+The agent can be used as a tool by any MCP client over local stdio (no network port):
+
+```bash
+pip install -r requirements.txt            # includes mcp
+python -m ai_research_agent.mcp_server
+```
+
+Example client config (Claude Desktop `claude_desktop_config.json`, or `claude mcp add` for Claude Code); set `cwd` to this repo so `data/` and `run_artifacts/` resolve:
+
+```json
+{"mcpServers": {"ai-research-agent": {
+  "command": "python", "args": ["-m", "ai_research_agent.mcp_server"],
+  "cwd": "C:\Users\Mumu\Documents\CMU_AgenticAI\code"}}}
+```
+
+| Tool | Purpose |
+|------|---------|
+| `start_research(topics, window_days=7, use_llm_verification=False)` | Start a run in the background (takes minutes); returns a `job_id`. One job at a time. |
+| `get_research_status(job_id)` | Poll; returns the roundup, top rankings, and `run_id` when completed |
+| `list_runs(limit=10)` | Recent saved runs |
+| `get_run(run_id)` | Compact summary of a saved run |
+| `verify_claim(claim, use_llm_verification=False)` | Check a claim against passages already in the local vector store |
+
+Safety: tools are narrow and take no URLs or file paths. Arguments are validated (topic charset/length, window 1-365, UUID-only run ids, so no path traversal), outputs are size-capped, and job state is in memory only (lost on restart; saved runs persist).
 
 ## Social Media Discovery (Optional)
 
@@ -204,7 +233,7 @@ Run artifacts are stored in `run_artifacts/` and the run index in `data/run_stat
 
 ```bash
 # Run all tests
-python -m pytest tests/ -v   # 55 tests
+python -m pytest tests/ -v   # 64 tests
 
 # Run a specific test file
 python -m pytest tests/test_tot.py -v
@@ -217,6 +246,7 @@ Tests cover:
 - ToT branch limits, scoring, pruning, and tie-breaking
 - Deduplication and report generation
 - LLM verification (Ollama mocked): downgrade, citation requirement, contradictions, fallback on failure or unavailability
+- MCP server logic: input validation, background jobs, single-job limit, failure reporting
 - Handling unavailable sources or malformed responses
 - A retrieved passage changing/qualifying the agent's initial assessment (illustrative mock data)
 
