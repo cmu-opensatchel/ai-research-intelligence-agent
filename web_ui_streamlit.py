@@ -278,6 +278,24 @@ if st.session_state.get("last_results"):
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("### ℹ️ System Status")
-st.sidebar.markdown("✅ Tests: 49/49 passing")
-st.sidebar.markdown("✅ Local LLM: Qwen3-8B (via Ollama)")
-st.sidebar.markdown("✅ Architecture: 14 modules")
+
+
+@st.cache_data(ttl=30)
+def _ollama_status():
+    """Check (not assume) whether the local Qwen3-8B model is reachable via Ollama."""
+    try:
+        from ai_research_agent.config import AgentConfig
+        from ai_research_agent.llm import OllamaClient
+
+        cfg = AgentConfig()
+        return OllamaClient(cfg).is_available(), cfg.ollama_model
+    except Exception:
+        return False, ""
+
+
+_llm_ready, _llm_model = _ollama_status()
+st.sidebar.markdown("✅ Core: heuristic verification + bounded Tree of Thought")
+if _llm_ready:
+    st.sidebar.markdown(f"✅ Local LLM available: {_llm_model}")
+else:
+    st.sidebar.markdown("⚪ Local LLM (Ollama): not available; LLM verification will fall back to heuristics")

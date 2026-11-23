@@ -31,7 +31,7 @@ def run(
     topic_list = [t.strip() for t in topics.split(",") if t.strip()]
     url_list = [u.strip() for u in urls.split(",") if u.strip()]
 
-    console.print(Panel.fit(f"[bold]AI Research Intelligence Agent[/bold]\nTopics: {', '.join(topic_list)}\nWindow: {window} days\nSocial discovery: {'enabled' if social else 'disabled'}"))
+    console.print(Panel.fit(f"[bold]AI Research Intelligence Agent[/bold]\nTopics: {', '.join(topic_list)}\nWindow: {window} days\nSocial discovery: {'enabled' if social else 'disabled'}\nLLM verification: {'enabled' if use_llm_verification else 'disabled'}"))
 
     cfg = AgentConfig()
     cfg.enable_social_discovery = social
